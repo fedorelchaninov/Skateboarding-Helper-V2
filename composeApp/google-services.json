@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "976580712441",
+    "project_id": "skateboardinghelper-9f24c",
+    "storage_bucket": "skateboardinghelper-9f24c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:976580712441:android:061c1a7e695d2cdf6a4f28",
+        "android_client_info": {
+          "package_name": "cz.tryptafunk.skatehelp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCwzmUYnrya1_rAhmU_Rc-zAdSMabUDJ_s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
