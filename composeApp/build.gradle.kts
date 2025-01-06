@@ -24,7 +24,7 @@ kotlin {
         iosSimulatorArm64()
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
-            baseName = "ComposeApp"
+            baseName = "composeApp"
             isStatic = true
         }
     }
@@ -55,9 +55,7 @@ kotlin {
             implementation(libs.koin.core)
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.navigation.compose)
-
-            implementation(project.dependencies.platform("com.google.firebase:firebase-bom:33.7.0"))
-            implementation(libs.firebase.common.ktx)
+            implementation(libs.firebase.firestore)
         }
     }
 }
