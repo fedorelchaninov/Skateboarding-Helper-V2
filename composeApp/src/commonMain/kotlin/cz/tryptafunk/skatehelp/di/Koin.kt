@@ -1,12 +1,5 @@
 package cz.tryptafunk.skatehelp.di
 
-import cz.tryptafunk.skatehelp.data.InMemoryMuseumStorage
-import cz.tryptafunk.skatehelp.data.KtorMuseumApi
-import cz.tryptafunk.skatehelp.data.MuseumApi
-import cz.tryptafunk.skatehelp.data.MuseumRepository
-import cz.tryptafunk.skatehelp.data.MuseumStorage
-import cz.tryptafunk.skatehelp.screens.detail.DetailViewModel
-import cz.tryptafunk.skatehelp.screens.list.ListViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.ContentType
@@ -26,26 +19,18 @@ val dataModule = module {
             }
         }
     }
-
-    single<MuseumApi> { KtorMuseumApi(get()) }
-    single<MuseumStorage> { InMemoryMuseumStorage() }
-    single {
-        MuseumRepository(get(), get()).apply {
-            initialize()
-        }
-    }
 }
 
-val viewModelModule = module {
-    factoryOf(::ListViewModel)
-    factoryOf(::DetailViewModel)
-}
+//val viewModelModule = module {
+//    factoryOf(::ListViewModel)
+//    factoryOf(::DetailViewModel)
+//}
 
 fun initKoin() {
     startKoin {
         modules(
             dataModule,
-            viewModelModule,
+            //viewModelModule,
         )
     }
 }
