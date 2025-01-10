@@ -1,10 +1,13 @@
 package cz.tryptafunk.skatehelp.screens.entity
 
+import cz.tryptafunk.skatehelp.common.enum.Difficulty
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class Trick(
     val name: String? = "",
-    val difficulty: String? = "",
-    val isDone: Boolean = false
+    val difficulty: Difficulty? = Difficulty.EASY,
+    val description: String? = "",
+    val isDone: Boolean = false,
+    val youtubeLink: String? = ""
 )

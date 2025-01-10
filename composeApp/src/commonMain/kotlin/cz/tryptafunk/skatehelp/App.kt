@@ -54,11 +54,17 @@ fun TrickItem(trick: Trick) {
         }
         trick.difficulty?.let {
             Text(
-                text = it
+                text = it.toString()
             )
         }
         Text(
             text = trick.isDone.toString()
+        )
+        Text(
+            text = trick.description.toString()
+        )
+        Text(
+            text = trick.youtubeLink.toString()
         )
     }
 }
