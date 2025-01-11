@@ -1,23 +1,49 @@
 package cz.tryptafunk.skatehelp
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardElevation
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,11 +53,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.rotary.onRotaryScrollEvent
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.unit.dp
 import cz.tryptafunk.skatehelp.common.enum.Difficulty
 import cz.tryptafunk.skatehelp.screens.entity.Trick
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun TrickTableScreen(
     tricks: List<Trick>,
@@ -60,77 +91,173 @@ fun TrickTableScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            Row(
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(8.dp)
+                    .padding(16.dp),
+                shape = RoundedCornerShape(12.dp)
             ) {
-                TextField(
-                    value = filterName,
-                    onValueChange = { filterName = it },
-                    label = { Text("Filter by Name") },
+                Column(
                     modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 8.dp)
-                )
-
-                var expanded by remember { mutableStateOf(false) }
-                Box {
-                    Button(onClick = { expanded = true }) {
-                        Text("Difficulty: ${filterDifficulty?.name ?: "All"}")
-                    }
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        DropdownMenuItem(
-                            onClick = {
-                                filterDifficulty = null
-                                expanded = false
-                            },
-                            text = { Text("All") }
-                        )
-                        Difficulty.entries.forEach { difficulty ->
-                            DropdownMenuItem(
-                                onClick = {
-                                    filterDifficulty = difficulty
-                                    expanded = false
-                                },
-                                text = { Text(difficulty.name) }
-                            )
-                        }
-                    }
-                }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(start = 8.dp)
+                        .fillMaxWidth()
+                        .padding(16.dp)
                 ) {
-                    Checkbox(
-                        checked = filterIsDone == true,
-                        onCheckedChange = {
-                            filterIsDone = if (filterIsDone == true) null else true
-                        }
+                    Text(
+                        text = "Filters",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(bottom = 12.dp)
                     )
-                    Text(text = "Done")
-                }
-            }
 
-            LazyColumn {
-                items(filteredTricks) { trick ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { onTrickClick(trick) }
+                            .border(
+                                width = 1.dp,
+                                color = Color.LightGray,
+                                shape = RoundedCornerShape(8.dp)
+                            )
                             .padding(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        var expanded by remember { mutableStateOf(false) }
+                        Box(
+                            modifier = Modifier.weight(0.4f)
+                        ) {
+                            Button(
+                                onClick = { expanded = true },
+                                shape = RoundedCornerShape(12.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color.Transparent,
+                                    contentColor = Color.Black
+                                ),
+                                modifier = Modifier
+                            ) {
+                                Text("Difficulty: ${filterDifficulty?.name ?: "All"}")
+                            }
+                            DropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false },
+                            ) {
+                                DropdownMenuItem(
+                                    onClick = {
+                                        filterDifficulty = null
+                                        expanded = false
+                                    },
+                                    text = { Text("All") }
+                                )
+                                Difficulty.entries.forEach { difficulty ->
+                                    DropdownMenuItem(
+                                        onClick = {
+                                            filterDifficulty = difficulty
+                                            expanded = false
+                                        },
+                                        text = { Text(difficulty.name) }
+                                    )
+                                }
+                            }
+                        }
+                        TextField(
+                            value = filterName,
+                            onValueChange = { filterName = it },
+                            label = { Text("Name", style = MaterialTheme.typography.bodyMedium) },
+                            shape = RoundedCornerShape(12.dp),
+                            colors = TextFieldDefaults.colors(
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                disabledIndicatorColor = Color.Transparent
+                            ),
+                            modifier = Modifier
+                                .weight(0.4f)
+                        )
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.weight(0.2f)
+                        ) {
+                            IconButton(
+                                onClick = {
+                                    filterIsDone = if (filterIsDone == true) null else true
+                                },
+                                colors = IconButtonDefaults.iconButtonColors(
+                                    containerColor = if (filterIsDone != null) Color(0xFF81C784) else Color(0xFFE57373),
+                                    contentColor = Color.Black
+                                ),
+                                modifier = Modifier
+                                    .size(40.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = "Filter Done",
+                                    tint = if (filterIsDone == true) Color.White else Color.Black
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            LazyColumn(
+                modifier = Modifier.padding(16.dp)
+                    .border(
+                        width = 0.dp,
+                        color = Color.Gray,
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .clip(RoundedCornerShape(8.dp))
+            ) {
+                stickyHeader {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color.LightGray.copy(alpha = 1f))
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Name",
+                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            text = "Difficulty",
+                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            text = "Done",
+                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                            modifier = Modifier
+                        )
+                    }
+                }
+
+                // Items List
+                itemsIndexed(filteredTricks) { index, trick ->
+                    val backgroundColor = if (index % 2 == 0) {
+                        MaterialTheme.colorScheme.surface
+                    } else {
+                        MaterialTheme.colorScheme.surfaceVariant
+                    }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(backgroundColor)
+                            .clickable { onTrickClick(trick) }
+                            .padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = trick.name.orEmpty(),
+                            style = MaterialTheme.typography.bodyLarge,
                             modifier = Modifier.weight(1f)
                         )
                         Text(
-                            text = trick.difficulty?.name.orEmpty(),
+                            text = if (trick.difficulty != null) {
+                                "${trick.difficulty.name[0]}${trick.difficulty.name.subSequence(1, trick.difficulty.name.length).toString().lowercase()}"
+                            } else "",
+                            style = MaterialTheme.typography.bodyLarge,
                             modifier = Modifier.weight(1f)
                         )
                         Checkbox(
@@ -140,8 +267,14 @@ fun TrickTableScreen(
                             }
                         )
                     }
+                    // Divider between rows
+                    HorizontalDivider(
+                        thickness = 1.dp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+                    )
                 }
             }
+
         }
     }
 }
