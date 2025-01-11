@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,11 +37,16 @@ fun TrickTableScreen(
     tricks: List<Trick>,
     onTrickClick: (Trick) -> Unit,
     onMarkDone: (Trick) -> Unit,
-    onFilterChange: (String?, Difficulty?, Boolean?) -> Unit
 ) {
     var filterName by remember { mutableStateOf("") }
     var filterDifficulty by remember { mutableStateOf<Difficulty?>(null) }
     var filterIsDone by remember { mutableStateOf<Boolean?>(null) }
+
+    var filteredTricks by remember { mutableStateOf(tricks) }
+
+    LaunchedEffect(filterName, filterDifficulty, filterIsDone, tricks) {
+        filteredTricks = filterTricks(tricks, filterName, filterDifficulty, filterIsDone)
+    }
 
     Scaffold(
         topBar = {
@@ -54,15 +60,18 @@ fun TrickTableScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            Row(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
                 TextField(
                     value = filterName,
-                    onValueChange = {
-                        filterName = it
-                        onFilterChange(filterName, filterDifficulty, filterIsDone)
-                    },
+                    onValueChange = { filterName = it },
                     label = { Text("Filter by Name") },
-                    modifier = Modifier.weight(1f).padding(end = 8.dp)
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 8.dp)
                 )
 
                 var expanded by remember { mutableStateOf(false) }
@@ -70,26 +79,25 @@ fun TrickTableScreen(
                     Button(onClick = { expanded = true }) {
                         Text("Difficulty: ${filterDifficulty?.name ?: "All"}")
                     }
-                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
                         DropdownMenuItem(
-                            {
-                                Text("All")
-                            },
                             onClick = {
-                            filterDifficulty = null
-                            expanded = false
-                            onFilterChange(filterName, filterDifficulty, filterIsDone)
-                        })
+                                filterDifficulty = null
+                                expanded = false
+                            },
+                            text = { Text("All") }
+                        )
                         Difficulty.entries.forEach { difficulty ->
                             DropdownMenuItem(
-                                {
-                                    Text(difficulty.name)
-                                },
                                 onClick = {
-                                filterDifficulty = difficulty
-                                expanded = false
-                                onFilterChange(filterName, filterDifficulty, filterIsDone)
-                            })
+                                    filterDifficulty = difficulty
+                                    expanded = false
+                                },
+                                text = { Text(difficulty.name) }
+                            )
                         }
                     }
                 }
@@ -102,7 +110,6 @@ fun TrickTableScreen(
                         checked = filterIsDone == true,
                         onCheckedChange = {
                             filterIsDone = if (filterIsDone == true) null else true
-                            onFilterChange(filterName, filterDifficulty, filterIsDone)
                         }
                     )
                     Text(text = "Done")
@@ -110,7 +117,7 @@ fun TrickTableScreen(
             }
 
             LazyColumn {
-                items(tricks) { trick ->
+                items(filteredTricks) { trick ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -118,9 +125,14 @@ fun TrickTableScreen(
                             .padding(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = trick.name.orEmpty(), modifier = Modifier.weight(1f))
-                        Text(text = trick.difficulty?.name.orEmpty(), modifier = Modifier.weight(1f))
-
+                        Text(
+                            text = trick.name.orEmpty(),
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            text = trick.difficulty?.name.orEmpty(),
+                            modifier = Modifier.weight(1f)
+                        )
                         Checkbox(
                             checked = trick.isDone,
                             onCheckedChange = { newValue ->
@@ -133,4 +145,20 @@ fun TrickTableScreen(
         }
     }
 }
+
+fun filterTricks(
+    tricks: List<Trick>,
+    name: String?,
+    difficulty: Difficulty?,
+    isDone: Boolean?
+): List<Trick> {
+    return tricks.filter { trick ->
+        val matchesName =
+            name.isNullOrEmpty() || trick.name?.contains(name, ignoreCase = true) == true
+        val matchesDifficulty = difficulty == null || trick.difficulty == difficulty
+        val matchesIsDone = isDone == null || trick.isDone == isDone
+        matchesName && matchesDifficulty && matchesIsDone
+    }
+}
+
 

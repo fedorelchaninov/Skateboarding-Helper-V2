@@ -31,8 +31,6 @@ fun App() {
             },
             onMarkDone = { trick ->
                 markTrickAsDone(trick)
-            },
-            onFilterChange = { name, difficulty, isDone ->
             }
         )
 
@@ -41,15 +39,6 @@ fun App() {
             onBack = { currentScreen = Screen.TrickTable }
         )
     }
-}
-
-
-fun filterTricks(
-    name: String?,
-    difficulty: Difficulty?,
-    isDone: Boolean?
-): Unit {
-
 }
 
 suspend fun getTricks(): List<Trick> {
