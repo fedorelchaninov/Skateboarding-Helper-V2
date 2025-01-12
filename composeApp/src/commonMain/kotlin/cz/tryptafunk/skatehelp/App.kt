@@ -10,6 +10,7 @@ import cz.tryptafunk.skatehelp.common.enum.Difficulty
 import cz.tryptafunk.skatehelp.screens.entity.Trick
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.firestore.firestore
+import dev.gitlive.firebase.firestore.where
 import kotlinx.coroutines.runBlocking
 
 @Composable
@@ -57,9 +58,11 @@ suspend fun getTricks(): List<Trick> {
 fun markTrickAsDone(trick: Trick) {
     val firebaseFirestore = Firebase.firestore
     runBlocking {
-        firebaseFirestore.collection("tricks")
-            .document(trick.name.orEmpty())
-            .update("isDone", trick.isDone)
+        val querySnapshot = firebaseFirestore.collection("TRICKS")
+            .where { "name" equalTo trick.name!! }
+            .get()
+            .documents[0]
+        querySnapshot.reference.update(Pair("isDone", trick.isDone))
     }
 }
 

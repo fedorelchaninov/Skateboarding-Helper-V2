@@ -262,8 +262,9 @@ fun TrickTableScreen(
                         )
                         Checkbox(
                             checked = trick.isDone,
-                            onCheckedChange = { newValue ->
-                                onMarkDone(trick.copy(isDone = newValue))
+                            onCheckedChange = {
+                                trick.isDone = !trick.isDone
+                                onMarkDone(trick)
                             }
                         )
                     }

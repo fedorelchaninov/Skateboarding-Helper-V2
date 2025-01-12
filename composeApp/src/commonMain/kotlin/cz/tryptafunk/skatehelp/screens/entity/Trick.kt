@@ -8,6 +8,6 @@ data class Trick(
     val name: String? = "",
     val difficulty: Difficulty? = Difficulty.EASY,
     val description: String? = "",
-    val isDone: Boolean = false,
+    var isDone: Boolean = false,
     val youtubeLink: String? = ""
 )
