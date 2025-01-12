@@ -73,10 +73,8 @@ fun TrickTableScreen(
     var filterDifficulty by remember { mutableStateOf<Difficulty?>(null) }
     var filterIsDone by remember { mutableStateOf<Boolean?>(null) }
 
-    var filteredTricks by remember { mutableStateOf(tricks) }
-
-    LaunchedEffect(filterName, filterDifficulty, filterIsDone, tricks) {
-        filteredTricks = filterTricks(tricks, filterName, filterDifficulty, filterIsDone)
+    val filteredTricks = remember(tricks, filterName, filterDifficulty, filterIsDone) {
+        filterTricks(tricks, filterName, filterDifficulty, filterIsDone)
     }
 
     Scaffold(
@@ -199,7 +197,8 @@ fun TrickTableScreen(
             }
 
             LazyColumn(
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier
+                    .padding(16.dp)
                     .border(
                         width = 0.dp,
                         color = Color.Gray,
@@ -254,16 +253,15 @@ fun TrickTableScreen(
                             modifier = Modifier.weight(1f)
                         )
                         Text(
-                            text = if (trick.difficulty != null) {
-                                "${trick.difficulty.name[0]}${trick.difficulty.name.subSequence(1, trick.difficulty.name.length).toString().lowercase()}"
-                            } else "",
+                            text = trick.difficulty?.let {
+                                "${it.name.first()}${it.name.drop(1).lowercase()}"
+                            } ?: "",
                             style = MaterialTheme.typography.bodyLarge,
                             modifier = Modifier.weight(1f)
                         )
                         Checkbox(
                             checked = trick.isDone,
                             onCheckedChange = {
-                                trick.isDone = !trick.isDone
                                 onMarkDone(trick)
                             }
                         )
@@ -275,10 +273,10 @@ fun TrickTableScreen(
                     )
                 }
             }
-
         }
     }
 }
+
 
 fun filterTricks(
     tricks: List<Trick>,

@@ -5,12 +5,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import cz.tryptafunk.skatehelp.common.enum.Difficulty
 import cz.tryptafunk.skatehelp.screens.entity.Trick
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.firestore.firestore
 import dev.gitlive.firebase.firestore.where
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 @Composable
@@ -19,6 +21,10 @@ fun App() {
     var selectedTrick by remember { mutableStateOf<Trick?>(null) }
     var tricks by remember { mutableStateOf<List<Trick>>(emptyList()) }
 
+    // Use a coroutine scope for asynchronous operations
+    val coroutineScope = rememberCoroutineScope()
+
+    // Fetch tricks when the composable is first launched
     LaunchedEffect(Unit) {
         tricks = getTricks()
     }
@@ -31,7 +37,18 @@ fun App() {
                 currentScreen = Screen.TrickDetails
             },
             onMarkDone = { trick ->
-                markTrickAsDone(trick)
+                coroutineScope.launch {
+                    // Create an updated Trick instance with toggled isDone
+                    val updatedTrick = trick.copy(isDone = !trick.isDone)
+
+                    // Update Firestore
+                    markTrickAsDone(updatedTrick)
+
+                    // Update local state by replacing the old trick with the updated one
+                    tricks = tricks.map {
+                        if (it.name == updatedTrick.name) updatedTrick else it
+                    }
+                }
             }
         )
 
@@ -41,6 +58,7 @@ fun App() {
         )
     }
 }
+
 
 suspend fun getTricks(): List<Trick> {
     val firebaseFirestore = Firebase.firestore
@@ -55,16 +73,29 @@ suspend fun getTricks(): List<Trick> {
     }
 }
 
-fun markTrickAsDone(trick: Trick) {
+suspend fun markTrickAsDone(trick: Trick) {
     val firebaseFirestore = Firebase.firestore
-    runBlocking {
+    try {
+        // Query Firestore for the trick with the given name
         val querySnapshot = firebaseFirestore.collection("TRICKS")
-            .where { "name" equalTo trick.name!! }
+            .where { "name" equalTo trick.name }
             .get()
-            .documents[0]
-        querySnapshot.reference.update(Pair("isDone", trick.isDone))
+             // Suspend until the operation completes
+
+        val document = querySnapshot.documents.firstOrNull()
+        if (document != null) {
+            // Update the isDone field in Firestore
+            document.reference.update(Pair("isDone", trick.isDone))
+        } else {
+            // Handle the case where the trick isn't found
+            println("Trick with name ${trick.name} not found.")
+        }
+    } catch (e: Exception) {
+        // Handle exceptions appropriately
+        e.printStackTrace()
     }
 }
+
 
 sealed class Screen {
     object TrickTable : Screen()
