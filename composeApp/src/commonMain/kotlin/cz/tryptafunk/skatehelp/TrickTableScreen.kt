@@ -60,7 +60,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.unit.dp
 import cz.tryptafunk.skatehelp.common.enum.Difficulty
-import cz.tryptafunk.skatehelp.screens.entity.Trick
+import cz.tryptafunk.skatehelp.entity.Trick
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable

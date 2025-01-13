@@ -32,7 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import cz.tryptafunk.skatehelp.screens.entity.Trick
+import cz.tryptafunk.skatehelp.entity.Trick
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

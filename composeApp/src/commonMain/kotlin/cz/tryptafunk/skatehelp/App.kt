@@ -8,7 +8,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import cz.tryptafunk.skatehelp.common.enum.Difficulty
-import cz.tryptafunk.skatehelp.screens.entity.Trick
+import cz.tryptafunk.skatehelp.entity.Trick
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.firestore.firestore
 import dev.gitlive.firebase.firestore.where

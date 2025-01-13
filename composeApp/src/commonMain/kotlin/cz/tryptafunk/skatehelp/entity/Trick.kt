@@ -1,4 +1,4 @@
-package cz.tryptafunk.skatehelp.screens.entity
+package cz.tryptafunk.skatehelp.entity
 
 import cz.tryptafunk.skatehelp.common.enum.Difficulty
 import kotlinx.serialization.Serializable
