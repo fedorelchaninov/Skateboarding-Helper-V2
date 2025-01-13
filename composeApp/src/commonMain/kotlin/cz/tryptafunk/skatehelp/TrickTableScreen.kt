@@ -45,8 +45,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,26 +55,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.rotary.onRotaryScrollEvent
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cz.tryptafunk.skatehelp.common.enum.Difficulty
 import cz.tryptafunk.skatehelp.entity.Trick
+import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun TrickTableScreen(
-    tricks: List<Trick>,
     onTrickClick: (Trick) -> Unit,
-    onMarkDone: (Trick) -> Unit,
+    viewModel: TrickTableViewModel = koinViewModel()
 ) {
     var filterName by remember { mutableStateOf("") }
     var filterDifficulty by remember { mutableStateOf<Difficulty?>(null) }
     var filterIsDone by remember { mutableStateOf<Boolean?>(null) }
 
-    val filteredTricks = remember(tricks, filterName, filterDifficulty, filterIsDone) {
-        filterTricks(tricks, filterName, filterDifficulty, filterIsDone)
+    val state by viewModel.screenState.collectAsStateWithLifecycle()
+
+    val filteredTricks = remember(state.tricks, filterName, filterDifficulty, filterIsDone) {
+        filterTricks(state.tricks, filterName, filterDifficulty, filterIsDone)
     }
 
     Scaffold(
@@ -196,79 +197,85 @@ fun TrickTableScreen(
                 }
             }
 
-            LazyColumn(
+            PullToRefreshBox(
+                isRefreshing = state.isRefreshing,
+                onRefresh = viewModel::onPullToRefreshTrigger,
                 modifier = Modifier
-                    .padding(16.dp)
-                    .border(
-                        width = 0.dp,
-                        color = Color.Gray,
-                        shape = RoundedCornerShape(8.dp)
-                    )
-                    .clip(RoundedCornerShape(8.dp))
             ) {
-                stickyHeader {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color.LightGray.copy(alpha = 1f))
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Name",
-                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                            modifier = Modifier.weight(1f)
+                LazyColumn(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .border(
+                            width = 0.dp,
+                            color = Color.Gray,
+                            shape = RoundedCornerShape(8.dp)
                         )
-                        Text(
-                            text = "Difficulty",
-                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                            modifier = Modifier.weight(1f)
-                        )
-                        Text(
-                            text = "Done",
-                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                        .clip(RoundedCornerShape(8.dp))
+                ) {
+                    stickyHeader {
+                        Row(
                             modifier = Modifier
-                        )
+                                .fillMaxWidth()
+                                .background(Color.LightGray.copy(alpha = 1f))
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Name",
+                                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                                modifier = Modifier.weight(1f)
+                            )
+                            Text(
+                                text = "Difficulty",
+                                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                                modifier = Modifier.weight(1f)
+                            )
+                            Text(
+                                text = "Done",
+                                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                                modifier = Modifier
+                            )
+                        }
                     }
-                }
 
-                itemsIndexed(filteredTricks) { index, trick ->
-                    val backgroundColor = if (index % 2 == 0) {
-                        MaterialTheme.colorScheme.surface
-                    } else {
-                        MaterialTheme.colorScheme.surfaceVariant
+                    itemsIndexed(filteredTricks) { index, trick ->
+                        val backgroundColor = if (index % 2 == 0) {
+                            MaterialTheme.colorScheme.surface
+                        } else {
+                            MaterialTheme.colorScheme.surfaceVariant
+                        }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(backgroundColor)
+                                .clickable { onTrickClick(trick) }
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = trick.name.orEmpty(),
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Text(
+                                text = trick.difficulty?.let {
+                                    "${it.name.first()}${it.name.drop(1).lowercase()}"
+                                } ?: "",
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Checkbox(
+                                checked = trick.isDone,
+                                onCheckedChange = {
+                                    (viewModel::onDoneCheckChange)(trick)
+                                }
+                            )
+                        }
+                        HorizontalDivider(
+                            thickness = 1.dp,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+                        )
                     }
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(backgroundColor)
-                            .clickable { onTrickClick(trick) }
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = trick.name.orEmpty(),
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Text(
-                            text = trick.difficulty?.let {
-                                "${it.name.first()}${it.name.drop(1).lowercase()}"
-                            } ?: "",
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Checkbox(
-                            checked = trick.isDone,
-                            onCheckedChange = {
-                                onMarkDone(trick)
-                            }
-                        )
-                    }
-                    HorizontalDivider(
-                        thickness = 1.dp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
-                    )
                 }
             }
         }
