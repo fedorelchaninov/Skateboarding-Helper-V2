@@ -232,7 +232,6 @@ fun TrickTableScreen(
                     }
                 }
 
-                // Items List
                 itemsIndexed(filteredTricks) { index, trick ->
                     val backgroundColor = if (index % 2 == 0) {
                         MaterialTheme.colorScheme.surface
@@ -266,7 +265,6 @@ fun TrickTableScreen(
                             }
                         )
                     }
-                    // Divider between rows
                     HorizontalDivider(
                         thickness = 1.dp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)

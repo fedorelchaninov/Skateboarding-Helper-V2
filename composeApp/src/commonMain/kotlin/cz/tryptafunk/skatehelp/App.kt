@@ -21,10 +21,8 @@ fun App() {
     var selectedTrick by remember { mutableStateOf<Trick?>(null) }
     var tricks by remember { mutableStateOf<List<Trick>>(emptyList()) }
 
-    // Use a coroutine scope for asynchronous operations
     val coroutineScope = rememberCoroutineScope()
 
-    // Fetch tricks when the composable is first launched
     LaunchedEffect(Unit) {
         tricks = getTricks()
     }
@@ -38,13 +36,10 @@ fun App() {
             },
             onMarkDone = { trick ->
                 coroutineScope.launch {
-                    // Create an updated Trick instance with toggled isDone
                     val updatedTrick = trick.copy(isDone = !trick.isDone)
 
-                    // Update Firestore
                     markTrickAsDone(updatedTrick)
 
-                    // Update local state by replacing the old trick with the updated one
                     tricks = tricks.map {
                         if (it.name == updatedTrick.name) updatedTrick else it
                     }
@@ -76,22 +71,17 @@ suspend fun getTricks(): List<Trick> {
 suspend fun markTrickAsDone(trick: Trick) {
     val firebaseFirestore = Firebase.firestore
     try {
-        // Query Firestore for the trick with the given name
         val querySnapshot = firebaseFirestore.collection("TRICKS")
             .where { "name" equalTo trick.name }
             .get()
-             // Suspend until the operation completes
 
         val document = querySnapshot.documents.firstOrNull()
         if (document != null) {
-            // Update the isDone field in Firestore
             document.reference.update(Pair("isDone", trick.isDone))
         } else {
-            // Handle the case where the trick isn't found
             println("Trick with name ${trick.name} not found.")
         }
     } catch (e: Exception) {
-        // Handle exceptions appropriately
         e.printStackTrace()
     }
 }
